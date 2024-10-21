@@ -20,6 +20,28 @@ public class MathController {
         return convertToDouble(numberOne) + convertToDouble(numberTwo);
     }
 
+    @RequestMapping(value = "/multiplication/{numberOne}/{numberTwo}", method = RequestMethod.GET)
+    public Double multiplication(
+        @PathVariable(value = "numberOne") String numberOne,
+        @PathVariable(value = "numberTwo") String numberTwo
+    ) throws Exception {
+        if (!isNumeric(numberOne) || !isNumeric(numberTwo)) {
+            throw new UnsupportedMathOperationException("Please send a numeric value!");
+        }
+        return convertToDouble(numberOne) * convertToDouble(numberTwo);
+    }
+
+    @RequestMapping(value = "/division/{numberOne}/{numberTwo}", method = RequestMethod.GET)
+    public Double division(
+            @PathVariable(value = "numberOne") String numberOne,
+            @PathVariable(value = "numberTwo") String numberTwo
+    ) throws Exception {
+        if (!isNumeric(numberOne) || !isNumeric(numberTwo)) {
+            throw new UnsupportedMathOperationException("Please send a numeric value!");
+        }
+        return convertToDouble(numberOne) / convertToDouble(numberTwo);
+    }
+
     private Double convertToDouble(String strNumber) {
         if (strNumber == null) return 0D;
         String number = strNumber.replaceAll(",", ".");
