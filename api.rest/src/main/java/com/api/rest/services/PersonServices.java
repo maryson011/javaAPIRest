@@ -1,8 +1,10 @@
 package com.api.rest.services;
 
 import com.api.rest.data.vo.v1.PersonVO;
+import com.api.rest.data.vo.v2.PersonVOV2;
 import com.api.rest.exceptions.ResourceNotFoundException;
 import com.api.rest.mapper.DozerMapper;
+import com.api.rest.mapper.custom.PersonMapper;
 import com.api.rest.model.Person;
 import com.api.rest.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +19,21 @@ public class PersonServices {
     @Autowired
     PersonRepository personRepository;
 
+    @Autowired
+    PersonMapper mapper;
+
     private Logger logger = Logger.getLogger(PersonServices.class.getName());
 
     public PersonVO create(PersonVO person) {
         logger.info("Creating one person");
         var entity = DozerMapper.parseObject(person, Person.class);
         return DozerMapper.parseObject(personRepository.save(entity), PersonVO.class);
+    }
+
+    public PersonVOV2 createV2(PersonVOV2 person) {
+        logger.info("Creating one person with V2");
+        var entity = mapper.convertVOToEntity(person);
+        return mapper.convertEntityToVO(personRepository.save(entity));
     }
 
     public PersonVO update(PersonVO person) {
