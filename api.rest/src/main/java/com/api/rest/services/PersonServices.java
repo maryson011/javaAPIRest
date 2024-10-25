@@ -1,5 +1,6 @@
 package com.api.rest.services;
 
+import com.api.rest.controller.PersonController;
 import com.api.rest.data.vo.v1.PersonVO;
 import com.api.rest.data.vo.v2.PersonVOV2;
 import com.api.rest.exceptions.ResourceNotFoundException;
@@ -9,6 +10,8 @@ import com.api.rest.model.Person;
 import com.api.rest.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -38,7 +41,7 @@ public class PersonServices {
 
     public PersonVO update(PersonVO person) {
         logger.info("Updating one person");
-        var entity = personRepository.findById(person.getId())
+        var entity = personRepository.findById(person.getKey())
                         .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
 
         entity.setFistName(person.getFistName());
@@ -64,6 +67,18 @@ public class PersonServices {
         logger.info("Finding one person!");
         var entity = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
-        return DozerMapper.parseObject(entity, PersonVO.class);
+        PersonVO vo = DozerMapper.parseObject(entity, PersonVO.class);
+        PersonVO vo1 = new PersonVO();
+        vo1.setKey(entity.getId());
+        vo1.setFistName(entity.getFistName());
+        vo1.setLastName(entity.getLastName());
+        vo1.setAddress(entity.getAddress());
+        vo1.setGender(entity.getGender());
+        try {
+            vo1.add(linkTo(methodOn(PersonController.class).findById(id)).withSelfRel());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return vo1;
     }
 }
