@@ -10,9 +10,13 @@ import com.api.rest.model.Person;
 import com.api.rest.repositories.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.swing.text.html.parser.Entity;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -30,7 +34,19 @@ public class PersonServices {
     public PersonVO create(PersonVO person) {
         logger.info("Creating one person");
         var entity = DozerMapper.parseObject(person, Person.class);
-        return DozerMapper.parseObject(personRepository.save(entity), PersonVO.class);
+        var vo = DozerMapper.parseObject(personRepository.save(entity), PersonVO.class);
+        PersonVO vo1 = new PersonVO();
+        vo1.setKey(entity.getId());
+        vo1.setFistName(entity.getFistName());
+        vo1.setLastName(entity.getLastName());
+        vo1.setAddress(entity.getAddress());
+        vo1.setGender(entity.getGender());
+        try {
+            vo1.add(linkTo(methodOn(PersonController.class).findById(vo1.getKey())).withSelfRel());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return vo1;
     }
 
     public PersonVOV2 createV2(PersonVOV2 person) {
@@ -60,7 +76,25 @@ public class PersonServices {
 
     public List<PersonVO> findAll() {
         logger.info("Finding all person!");
-        return DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
+//        return DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
+        List<Person> entity = personRepository.findAll();
+        List<PersonVO> entityReturn = new ArrayList<>();
+        for (Person en: entity) {
+            PersonVO vo1 = new PersonVO();
+            vo1.setKey(en.getId());
+            vo1.setFistName(en.getFistName());
+            vo1.setLastName(en.getLastName());
+            vo1.setAddress(en.getAddress());
+            vo1.setGender(en.getGender());
+            try {
+                vo1.add(linkTo(methodOn(PersonController.class).findById(en.getId())).withSelfRel());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            entityReturn.add(vo1);
+        }
+
+        return entityReturn;
     }
 
     public PersonVO findById(Long id) {
